@@ -1,0 +1,87 @@
+name: Soul
+options:
+  bundleIdPrefix: com.soul
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ENABLE_PREVIEWS: YES
+    ALWAYS_SEARCH_USER_PATHS: NO
+    CLANG_ANALYZER_NONNULL: YES
+    CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+    CLANG_ENABLE_MODULES: YES
+    CLANG_ENABLE_OBJC_ARC: YES
+    CLANG_WARN_BOOL_CONVERSION: YES
+    CLANG_WARN_CONSTANT_CONVERSION: YES
+    CLANG_WARN_DIRECT_IVAR_ACCESS: YES
+    CLANG_WARN_EMPTY_BODY: YES
+    CLANG_WARN_ENUM_CONVERSION: YES
+    CLANG_WARN_INT_CONVERSION: YES
+    CLANG_WARN_NON_LITERAL_NULL_CONVERSION: YES
+    CLANG_WARN_OBJC_LITERAL_CONVERSION: YES
+    CLANG_WARN_UNREACHABLE_CODE: YES
+    CLANG_WARN__DUPLICATE_METHOD_MATCH: YES
+    GCC_C_LANGUAGE_STANDARD: "gnu17"
+    GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
+    GCC_WARN_UNDECLARED_SELECTOR: YES
+    GCC_WARN_UNINITIALIZED_AUTOS: YES_AGGRESSIVE
+    GCC_WARN_UNUSED_FUNCTION: YES
+    GCC_WARN_UNUSED_VARIABLE: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: "2.5.0"
+
+targets:
+  Soul:
+    type: application
+    platform: iOS
+    sources:
+      - path: Soul
+    info:
+      path: Soul/Info.plist
+      properties:
+        CFBundleName: Soul
+        CFBundleDisplayName: Soul
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: LaunchScreenBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSCameraUsageDescription: "Soul uses your camera to add photos to project updates."
+        NSPhotoLibraryUsageDescription: "Soul accesses your photo library to add images to your project updates."
+        UIUserInterfaceStyle: Dark
+        LSApplicationQueriesSchemes:
+          - soul
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - soul
+    dependencies:
+      - package: Supabase
+        product: Supabase
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.soul.app
+        INFOPLIST_FILE: Soul/Info.plist
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  SoulTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SoulTests
+    dependencies:
+      - target: Soul
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.soul.app.tests
