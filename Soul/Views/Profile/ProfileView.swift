@@ -1,13 +1,235 @@
 import SwiftUI
-import PhotosUI
 
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
-    @StateObject private var projectsVM = ProjectsViewModel()
+    @StateObject private var treeVM = TreeViewModel()
+    @State private var selectedProject: Project?
+    @State private var selectedUpdate: ProjectUpdate?
+    @State private var selectedUpdateProject: Project?
     @State private var showEditProfile = false
     @State private var showSignOutConfirm = false
+    @State private var showNewProject = false
+
+    private let engine = TreeLayoutEngine()
 
     var user: AppUser? { authService.currentUser }
+
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geo in
+                ZStack(alignment: .top) {
+                    Color.soulBackground.ignoresSafeArea()
+
+                    if treeVM.isLoading {
+                        VStack {
+                            Spacer()
+                            ProgressView().tint(Color.soulAccent)
+                            Text("Growing your tree…")
+                                .font(.caption)
+                                .foregroundStyle(Color.soulTextSecondary)
+                                .padding(.top, 8)
+                            Spacer()
+                        }
+                    } else if let user {
+                        let layout = engine.compute(
+                            user: user,
+                            projects: treeVM.projects,
+                            updatesByProject: treeVM.updatesByProject,
+                            canvasWidth: geo.size.width
+                        )
+
+                        VStack(spacing: 0) {
+                            profileHeader(user: user)
+                            statsStrip
+                            Divider()
+                                .background(Color.white.opacity(0.07))
+
+                            if treeVM.projects.isEmpty {
+                                emptyTreeState
+                            } else {
+                                SoulTreeView(
+                                    layout: layout,
+                                    user: user,
+                                    onBranchTap: { project in
+                                        selectedProject = project
+                                    },
+                                    onNodeTap: { update, project in
+                                        selectedUpdate = update
+                                        selectedUpdateProject = project
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Floating add button
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button {
+                                showNewProject = true
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(Color.soulBackground)
+                                    .padding(18)
+                                    .background(Color.soulAccent)
+                                    .clipShape(Circle())
+                                    .shadow(color: Color.soulAccent.opacity(0.35), radius: 14, y: 4)
+                            }
+                            .padding(.trailing, 24)
+                            .padding(.bottom, 24)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Soul")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button("Edit Profile") { showEditProfile = true }
+                        Divider()
+                        Button("Sign Out", role: .destructive) { showSignOutConfirm = true }
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .foregroundStyle(Color.soulTextSecondary)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showNewProject) {
+            NewProjectView { project in
+                treeVM.projects.insert(project, at: 0)
+            }
+        }
+        .sheet(isPresented: $showEditProfile) {
+            EditProfileView()
+        }
+        .sheet(item: $selectedProject) { project in
+            ProjectDetailView(project: project)
+        }
+        .sheet(item: $selectedUpdate) { update in
+            if let project = selectedUpdateProject {
+                UpdateDetailSheet(update: update, project: project)
+            }
+        }
+        .confirmationDialog("Sign out?", isPresented: $showSignOutConfirm) {
+            Button("Sign Out", role: .destructive) {
+                Task { try? await authService.signOut() }
+            }
+        }
+        .task {
+            if let userId = user?.id {
+                await treeVM.loadTree(userId: userId)
+            }
+        }
+        .refreshable {
+            if let userId = user?.id {
+                await treeVM.loadTree(userId: userId)
+            }
+        }
+    }
+
+    // MARK: - Subviews
+
+    private func profileHeader(user: AppUser) -> some View {
+        HStack(spacing: 14) {
+            AvatarView(url: user.avatarUrl, size: 48, name: user.fullName)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(user.fullName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.soulTextPrimary)
+                Text("@\(user.username)")
+                    .font(.caption)
+                    .foregroundStyle(Color.soulAccent)
+                if let bio = user.bio, !bio.isEmpty {
+                    Text(bio)
+                        .font(.caption)
+                        .foregroundStyle(Color.soulTextSecondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+    }
+
+    private var statsStrip: some View {
+        HStack(spacing: 0) {
+            statItem(
+                value: "\(treeVM.projects.filter { $0.status == .active }.count)",
+                label: "Growing"
+            )
+            divider
+            statItem(value: "\(treeVM.projects.count)", label: "Branches")
+            divider
+            statItem(value: "\(treeVM.totalUpdates)", label: "Moments")
+        }
+        .padding(.vertical, 10)
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.1))
+            .frame(width: 1, height: 28)
+    }
+
+    private func statItem(value: String, label: String) -> some View {
+        VStack(spacing: 1) {
+            Text(value)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundStyle(Color.soulTextPrimary)
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundStyle(Color.soulTextSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var emptyTreeState: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "leaf")
+                .font(.system(size: 44))
+                .foregroundStyle(Color.soulAccent.opacity(0.5))
+
+            VStack(spacing: 8) {
+                Text("Plant your first branch")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.soulTextPrimary)
+                Text("Create a project and your Soul Tree will begin to grow.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.soulTextSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+
+            SoulButton(title: "Create a Project") {
+                showNewProject = true
+            }
+            .frame(width: 220)
+
+            Spacer()
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Update Detail Sheet
+
+struct UpdateDetailSheet: View {
+    let update: ProjectUpdate
+    let project: Project
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
@@ -15,143 +237,45 @@ struct ProfileView: View {
                 Color.soulBackground.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 0) {
-                        profileHeader
-                        statsRow
-                        Divider()
-                            .background(Color.white.opacity(0.08))
-                            .padding(.vertical, 20)
-                        projectsSection
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Project context
+                        Text(project.title)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.soulAccent)
+
+                        Text(update.createdAt.formatted(style: .long))
+                            .font(.caption2)
+                            .foregroundStyle(Color.soulTextSecondary)
+
+                        if let mediaUrl = update.mediaUrl,
+                           update.mediaType == .photo,
+                           let url = URL(string: mediaUrl) {
+                            AsyncImage(url: url) { phase in
+                                if let image = phase.image {
+                                    image.resizable().scaledToFit()
+                                } else {
+                                    Color.soulCard.frame(height: 200)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        if !update.text.isEmpty {
+                            Text(update.text)
+                                .font(.body)
+                                .foregroundStyle(Color.soulTextPrimary)
+                        }
                     }
-                    .padding(.bottom, 32)
+                    .padding(24)
                 }
             }
-            .navigationTitle("Profile")
+            .navigationTitle("Update")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button("Edit Profile") { showEditProfile = true }
-                        Divider()
-                        Button("Sign Out", role: .destructive) {
-                            showSignOutConfirm = true
-                        }
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(Color.soulTextSecondary)
-                    }
-                }
-            }
-            .sheet(isPresented: $showEditProfile) {
-                EditProfileView()
-            }
-            .confirmationDialog("Sign out?", isPresented: $showSignOutConfirm) {
-                Button("Sign Out", role: .destructive) {
-                    Task { try? await authService.signOut() }
-                }
-            }
-        }
-        .task {
-            if let userId = user?.id {
-                await projectsVM.loadProjects(userId: userId)
-            }
-        }
-    }
-
-    private var profileHeader: some View {
-        VStack(spacing: 12) {
-            AvatarView(url: user?.avatarUrl, size: 80, name: user?.fullName ?? "")
-
-            VStack(spacing: 4) {
-                Text(user?.fullName ?? "")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.soulTextPrimary)
-
-                Text("@\(user?.username ?? "")")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.soulAccent)
-
-                if let bio = user?.bio, !bio.isEmpty {
-                    Text(bio)
-                        .font(.body)
-                        .foregroundStyle(Color.soulTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 4)
-                        .padding(.horizontal, 32)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
-        .padding(.bottom, 16)
-    }
-
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            statItem(
-                value: "\(projectsVM.projects.filter { $0.status == .active }.count)",
-                label: "Active"
-            )
-            Divider()
-                .frame(height: 32)
-                .background(Color.white.opacity(0.1))
-            statItem(
-                value: "\(projectsVM.projects.count)",
-                label: "Projects"
-            )
-            Divider()
-                .frame(height: 32)
-                .background(Color.white.opacity(0.1))
-            statItem(
-                value: "\(projectsVM.projects.filter { $0.status == .completed }.count)",
-                label: "Done"
-            )
-        }
-        .padding(.vertical, 12)
-        .background(Color.soulCard)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .padding(.horizontal, 20)
-    }
-
-    private func statItem(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.soulTextPrimary)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(Color.soulTextSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var projectsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Projects")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.soulTextPrimary)
-                .padding(.horizontal, 20)
-
-            if projectsVM.isLoading {
-                ProgressView().tint(Color.soulAccent).padding()
-            } else if projectsVM.projects.isEmpty {
-                Text("No projects yet")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.soulTextSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 24)
-            } else {
-                LazyVStack(spacing: 14) {
-                    ForEach(projectsVM.projects) { project in
-                        NavigationLink(destination: ProjectDetailView(project: project)) {
-                            ProjectCard(project: project)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 16)
-                    }
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Color.soulAccent)
                 }
             }
         }
@@ -159,6 +283,7 @@ struct ProfileView: View {
 }
 
 // MARK: - Edit Profile View
+
 struct EditProfileView: View {
     @EnvironmentObject var authService: AuthService
     @Environment(\.dismiss) var dismiss
@@ -202,7 +327,6 @@ struct EditProfileView: View {
                         isLoading: isLoading,
                         isDisabled: fullName.isBlank
                     )
-
                     Spacer()
                 }
                 .padding(20)

@@ -5,118 +5,115 @@ struct UserProfileView: View {
     let userId: UUID
 
     @State private var user: AppUser?
-    @State private var projects: [Project] = []
+    @StateObject private var treeVM = TreeViewModel()
     @State private var isLoading = true
     @State private var friendshipStatus: FriendshipButtonState = .none
-    @State private var friendshipId: UUID?
+    @State private var selectedProject: Project?
+    @State private var selectedUpdate: ProjectUpdate?
+    @State private var selectedUpdateProject: Project?
 
-    enum FriendshipButtonState {
-        case none, pending, friends
-    }
+    private let engine = TreeLayoutEngine()
+
+    enum FriendshipButtonState { case none, pending, friends }
 
     var body: some View {
-        ZStack {
-            Color.soulBackground.ignoresSafeArea()
+        GeometryReader { geo in
+            ZStack {
+                Color.soulBackground.ignoresSafeArea()
 
-            if isLoading {
-                ProgressView().tint(Color.soulAccent)
-            } else if let user {
-                ScrollView {
+                if isLoading {
+                    ProgressView().tint(Color.soulAccent)
+                } else if let user {
+                    let layout = engine.compute(
+                        user: user,
+                        projects: treeVM.projects,
+                        updatesByProject: treeVM.updatesByProject,
+                        canvasWidth: geo.size.width
+                    )
+
                     VStack(spacing: 0) {
                         profileHeader(user: user)
 
                         if authService.currentUser?.id != userId {
                             friendshipButton
                                 .padding(.horizontal, 60)
-                                .padding(.top, 8)
+                                .padding(.bottom, 10)
                         }
 
-                        Divider()
-                            .background(Color.white.opacity(0.08))
-                            .padding(.vertical, 20)
+                        Divider().background(Color.white.opacity(0.07))
 
-                        projectsSection
+                        if treeVM.projects.isEmpty {
+                            Spacer()
+                            Text("No projects yet")
+                                .foregroundStyle(Color.soulTextSecondary)
+                            Spacer()
+                        } else {
+                            SoulTreeView(
+                                layout: layout,
+                                user: user,
+                                onBranchTap: { selectedProject = $0 },
+                                onNodeTap: { update, project in
+                                    selectedUpdate = update
+                                    selectedUpdateProject = project
+                                }
+                            )
+                        }
                     }
-                    .padding(.bottom, 32)
                 }
             }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await loadProfile()
+        .sheet(item: $selectedProject) { ProjectDetailView(project: $0) }
+        .sheet(item: $selectedUpdate) { update in
+            if let project = selectedUpdateProject {
+                UpdateDetailSheet(update: update, project: project)
+            }
         }
+        .task { await loadProfile() }
     }
 
     private func profileHeader(user: AppUser) -> some View {
-        VStack(spacing: 12) {
-            AvatarView(url: user.avatarUrl, size: 80, name: user.fullName)
-
-            VStack(spacing: 4) {
+        HStack(spacing: 14) {
+            AvatarView(url: user.avatarUrl, size: 48, name: user.fullName)
+            VStack(alignment: .leading, spacing: 2) {
                 Text(user.fullName)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.headline).fontWeight(.bold)
                     .foregroundStyle(Color.soulTextPrimary)
-
                 Text("@\(user.username)")
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(Color.soulAccent)
-
                 if let bio = user.bio, !bio.isEmpty {
                     Text(bio)
-                        .font(.body)
+                        .font(.caption)
                         .foregroundStyle(Color.soulTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 4)
-                        .padding(.horizontal, 32)
+                        .lineLimit(1)
                 }
             }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("\(treeVM.projects.count)")
+                    .font(.title3).fontWeight(.bold)
+                    .foregroundStyle(Color.soulTextPrimary)
+                Text("branches")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.soulTextSecondary)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
-        .padding(.bottom, 16)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
 
     @ViewBuilder
     private var friendshipButton: some View {
         switch friendshipStatus {
         case .none:
-            SoulButton(title: "Add Friend") {
-                sendRequest()
-            }
+            SoulButton(title: "Add Friend", action: sendRequest)
         case .pending:
             SoulButton(title: "Request Sent", style: .secondary) {}
                 .disabled(true)
         case .friends:
-            SoulButton(title: "Friends", style: .secondary) {}
-        }
-    }
-
-    private var projectsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Projects")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.soulTextPrimary)
-                .padding(.horizontal, 20)
-
-            if projects.isEmpty {
-                Text("No projects yet")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.soulTextSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 24)
-            } else {
-                LazyVStack(spacing: 14) {
-                    ForEach(projects) { project in
-                        NavigationLink(destination: ProjectDetailView(project: project)) {
-                            ProjectCard(project: project)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 16)
-                    }
-                }
-            }
+            SoulButton(title: "Friends ✓", style: .secondary) {}
         }
     }
 
@@ -124,7 +121,7 @@ struct UserProfileView: View {
         isLoading = true
         do {
             user = try await FriendService.shared.fetchUser(id: userId)
-            projects = try await ProjectService.shared.fetchUserProjects(userId: userId)
+            await treeVM.loadTree(userId: userId)
 
             if let currentUserId = authService.currentUser?.id {
                 let friendships = try await FriendService.shared.fetchFriendships(userId: currentUserId)
@@ -132,20 +129,17 @@ struct UserProfileView: View {
                     ($0.requesterId == currentUserId && $0.addresseeId == userId) ||
                     ($0.requesterId == userId && $0.addresseeId == currentUserId)
                 }) {
-                    friendshipId = match.id
                     friendshipStatus = match.status == .accepted ? .friends : .pending
                 }
             }
-        } catch {
-            print("Failed to load profile: \(error)")
-        }
+        } catch { }
         isLoading = false
     }
 
     private func sendRequest() {
-        guard let currentUserId = authService.currentUser?.id else { return }
+        guard let currentId = authService.currentUser?.id else { return }
         Task {
-            try? await FriendService.shared.sendFriendRequest(from: currentUserId, to: userId)
+            try? await FriendService.shared.sendFriendRequest(from: currentId, to: userId)
             friendshipStatus = .pending
         }
     }

@@ -14,6 +14,7 @@
 		1A4146E583416052EFD1C9FF /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D17B3A7B6F18CFCC483EE7 /* StatusBadge.swift */; };
 		2185261FB1545AE2D04FEA9E /* SoulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF8976267A57CF2150541E5 /* SoulApp.swift */; };
 		227EB3BE854E5E1A1F85D760 /* FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D6E5BD7BDA78BF6B80DBCB /* FriendsView.swift */; };
+		2605C390066C3C5BE0E28B3B /* TreeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE8A517C064FA89ED6B522 /* TreeViewModel.swift */; };
 		2E13123B1B380606B1E5F868 /* NewUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69024A044AA4EE4E61A912BC /* NewUpdateView.swift */; };
 		3C65A8740528BF2D167A995C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C267215F14C4C1F72BE7C78 /* ContentView.swift */; };
 		3D262B961B418114E6D72432 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F6230586118BA20C3654F5 /* Constants.swift */; };
@@ -26,6 +27,8 @@
 		6E42C08A590B3E7B58552BAB /* FeedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94DDB2B460DD4810FEE38B2 /* FeedCard.swift */; };
 		6FD6FB0787CC454A317DABE5 /* FriendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51CFE41FC52591772D30D123 /* FriendService.swift */; };
 		707C6C301B40438424B6CF68 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8ED2D3BE56E8321FD42BF7 /* LoginView.swift */; };
+		82B0FC9B47294DA173077DE0 /* SoulTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49F9D0DD6A65FF575BAA260 /* SoulTreeView.swift */; };
+		86832D2656A264E3BB4DC795 /* TreeLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CDD08ACC1CD0C7962466AC /* TreeLayoutEngine.swift */; };
 		8F9B962AD55ACFA2B78A770D /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDEBFAB9AD626059615DFF11 /* AvatarView.swift */; };
 		97B36EE9A1B809E37AE0E3BF /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1107BF8A317CBEA3FA170B2 /* UpdateService.swift */; };
 		984C03C2FACC67FB3570748C /* FriendsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AD42D489BD7DF1CDEDFA8B /* FriendsViewModel.swift */; };
@@ -55,11 +58,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0FBE8A517C064FA89ED6B522 /* TreeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeViewModel.swift; sourceTree = "<group>"; };
 		147593530F000B736343C0C5 /* SoulTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoulTests.swift; sourceTree = "<group>"; };
 		1AC9BF1846EB7D6F416A5EED /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		1E61DC0E60976C5BA2DCC615 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		370F0073768FAE08BD698D06 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		4338AE43AC1B9EB62176253A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		48CDD08ACC1CD0C7962466AC /* TreeLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeLayoutEngine.swift; sourceTree = "<group>"; };
 		4D8ED2D3BE56E8321FD42BF7 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		51CFE41FC52591772D30D123 /* FriendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendService.swift; sourceTree = "<group>"; };
 		5383963A7A1342EE7DA47728 /* UpdatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatesViewModel.swift; sourceTree = "<group>"; };
@@ -78,6 +83,7 @@
 		A92ADB9B7A97D0A90AC6FB12 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		ABE0FC0319F4E564410AC8A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B1EA8527D87CD777E54A1C63 /* ProjectCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCard.swift; sourceTree = "<group>"; };
+		B49F9D0DD6A65FF575BAA260 /* SoulTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoulTreeView.swift; sourceTree = "<group>"; };
 		B6D2F8814BE05883413AF93B /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		B94DDB2B460DD4810FEE38B2 /* FeedCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCard.swift; sourceTree = "<group>"; };
 		B9681A30212285B577C901DF /* ProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsView.swift; sourceTree = "<group>"; };
@@ -138,6 +144,7 @@
 				1E61DC0E60976C5BA2DCC615 /* FeedViewModel.swift */,
 				89AD42D489BD7DF1CDEDFA8B /* FriendsViewModel.swift */,
 				73EFA9A575C0F423C2103739 /* ProjectsViewModel.swift */,
+				0FBE8A517C064FA89ED6B522 /* TreeViewModel.swift */,
 				5383963A7A1342EE7DA47728 /* UpdatesViewModel.swift */,
 			);
 			path = ViewModels;
@@ -233,6 +240,8 @@
 			isa = PBXGroup;
 			children = (
 				6831B43CF6810E6962623313 /* ProfileView.swift */,
+				B49F9D0DD6A65FF575BAA260 /* SoulTreeView.swift */,
+				48CDD08ACC1CD0C7962466AC /* TreeLayoutEngine.swift */,
 				BB9E2AE8DD592EEBDF99B9B3 /* UserProfileView.swift */,
 			);
 			path = Profile;
@@ -402,8 +411,11 @@
 				2185261FB1545AE2D04FEA9E /* SoulApp.swift in Sources */,
 				49C2C38C8A9E2910BA59B99D /* SoulButton.swift in Sources */,
 				A4CB26B3DB5113A8BB2610FC /* SoulTextField.swift in Sources */,
+				82B0FC9B47294DA173077DE0 /* SoulTreeView.swift in Sources */,
 				1A4146E583416052EFD1C9FF /* StatusBadge.swift in Sources */,
 				E7CEBD2208690549092F1CFC /* SupabaseClient.swift in Sources */,
+				86832D2656A264E3BB4DC795 /* TreeLayoutEngine.swift in Sources */,
+				2605C390066C3C5BE0E28B3B /* TreeViewModel.swift in Sources */,
 				97B36EE9A1B809E37AE0E3BF /* UpdateService.swift in Sources */,
 				E289C71981FB13841D3FF192 /* UpdatesViewModel.swift in Sources */,
 				CD25B1A72D44E5F7E395D326 /* UserProfileView.swift in Sources */,
