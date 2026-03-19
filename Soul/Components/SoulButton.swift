@@ -2,10 +2,10 @@ import SwiftUI
 
 struct SoulButton: View {
     let title: String
-    let action: () -> Void
     var style: ButtonStyle = .primary
-    var isLoading = false
-    var isDisabled = false
+    var isLoading: Bool = false
+    var isDisabled: Bool = false
+    let action: () -> Void
 
     enum ButtonStyle {
         case primary, secondary, ghost

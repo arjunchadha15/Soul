@@ -109,6 +109,7 @@ struct UserProfileView: View {
         switch friendshipStatus {
         case .none:
             SoulButton(title: "Add Friend", action: sendRequest)
+
         case .pending:
             SoulButton(title: "Request Sent", style: .secondary) {}
                 .disabled(true)

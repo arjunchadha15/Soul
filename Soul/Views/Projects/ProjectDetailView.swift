@@ -296,7 +296,7 @@ struct EditProjectView: View {
                     .background(Color.soulCard)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    SoulButton(title: "Save Changes", action: save, isLoading: isLoading, isDisabled: title.isBlank)
+                    SoulButton(title: "Save Changes", isLoading: isLoading, isDisabled: title.isBlank, action: save)
 
                     Spacer()
                 }

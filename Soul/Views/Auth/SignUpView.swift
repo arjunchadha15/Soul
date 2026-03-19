@@ -67,9 +67,9 @@ struct SignUpView: View {
 
                     SoulButton(
                         title: "Create Account",
-                        action: signUp,
                         isLoading: isLoading,
-                        isDisabled: !isFormValid
+                        isDisabled: !isFormValid,
+                        action: signUp
                     )
 
                     Button("Already have an account? Sign in") {

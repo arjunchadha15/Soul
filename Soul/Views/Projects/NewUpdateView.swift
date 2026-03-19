@@ -95,9 +95,9 @@ struct NewUpdateView: View {
 
                         SoulButton(
                             title: "Post Update",
-                            action: postUpdate,
                             isLoading: isLoading,
-                            isDisabled: text.isBlank && mediaData == nil
+                            isDisabled: text.isBlank && mediaData == nil,
+                            action: postUpdate
                         )
                     }
                     .padding(.horizontal, 20)

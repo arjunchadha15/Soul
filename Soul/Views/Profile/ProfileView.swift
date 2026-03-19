@@ -323,9 +323,9 @@ struct EditProfileView: View {
 
                     SoulButton(
                         title: "Save",
-                        action: save,
                         isLoading: isLoading,
-                        isDisabled: fullName.isBlank
+                        isDisabled: fullName.isBlank,
+                        action: save
                     )
                     Spacer()
                 }

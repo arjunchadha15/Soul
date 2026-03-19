@@ -33,9 +33,7 @@ final class AuthService: ObservableObject {
             password: password
         )
 
-        guard let userId = response.user?.id else {
-            throw AuthError.noUser
-        }
+        let userId = response.user.id
 
         let newUser = AppUser(
             id: userId,

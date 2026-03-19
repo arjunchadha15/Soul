@@ -51,9 +51,9 @@ struct LoginView: View {
 
                 SoulButton(
                     title: "Sign In",
-                    action: signIn,
                     isLoading: isLoading,
-                    isDisabled: email.isBlank || password.isBlank
+                    isDisabled: email.isBlank || password.isBlank,
+                    action: signIn
                 )
 
                 Spacer()

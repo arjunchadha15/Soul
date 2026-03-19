@@ -82,9 +82,9 @@ struct NewProjectView: View {
 
                         SoulButton(
                             title: "Create Project",
-                            action: createProject,
                             isLoading: isLoading,
-                            isDisabled: title.isBlank
+                            isDisabled: title.isBlank,
+                            action: createProject
                         )
                     }
                     .padding(.horizontal, 20)
